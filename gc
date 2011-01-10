@@ -5,7 +5,7 @@ require 'open-uri'
 
 class GoogleCalculator
   @@base = 'http://www.google.com/ig/calculator?q='
-  @@matcher = /\{lhs: "([^"]*)",rhs: "([^"]*)",error: "([^"]*)",icc: false\}/
+  @@matcher = /\{lhs: "([^"]*)",rhs: "([^"]*)",error: "([^"]*)",icc: (false|true)\}/
 
   def self.calculate( str, verbose=false )
     url = @@base + CGI.escape(str)
