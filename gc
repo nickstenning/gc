@@ -1,0 +1,61 @@
+#!/usr/bin/env ruby
+
+require 'cgi'
+require 'open-uri'
+
+class GoogleCalculator
+  @@base = 'http://www.google.com/ig/calculator?q='
+  @@matcher = /\{lhs: "([^"]*)",rhs: "([^"]*)",error: "([^"]*)",icc: false\}/
+
+  def self.calculate( str, verbose=false )
+    url = @@base + CGI.escape(str)
+    response = open(url).read
+    result = @@matcher.match( response )
+
+    if result[3] != ''
+      self.error_string( result[3] )
+    else
+      self.response_string( result[1], result[2], verbose )
+    end
+  end
+
+  def self.parse_string( str )
+    str.gsub!(/\\x[0-9a-f]{2}/) { |m| m[2..-1].hex.chr }
+    str.gsub!("\240", ",")
+    str.gsub!(/&#215;/, "*")
+    str.gsub!(/\<sup\>[^\<]+\<\/sup\>/) { |m| "^" + m[5..-7] }
+    str = CGI.unescapeHTML(str)
+  end
+
+  def self.error_string( error )
+    err = self.parse_string(error)
+    if err == "4"
+      err = "4 -- no result found. Most likely no results"
+    end
+
+    "Error: #{err}"
+  end
+
+  def self.response_string( lhs, rhs, verbose )
+    o = ""
+    if verbose
+      o += self.parse_string(lhs) + " = "
+    end
+    o += self.parse_string(rhs)
+    o
+  end
+end
+
+if $0 == __FILE__
+  if $ARGV.length > 0
+
+    if $ARGV[0] == '-v'
+      $ARGV.shift
+      verbose = true
+    end
+
+    puts GoogleCalculator.calculate( $ARGV.join(' '), verbose )
+  else
+    puts "Usage: #{File.basename($0)} 2 + 2"
+  end
+end
