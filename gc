@@ -12,6 +12,8 @@ class GoogleCalculator
     response = open(url).read
     result = @@matcher.match( response )
 
+    self.bug_out(response) if !result
+
     if result[3] != ''
       self.error_string( result[3] )
     else
@@ -43,6 +45,14 @@ class GoogleCalculator
     end
     o += self.parse_string(rhs)
     o
+  end
+
+  def self.bug_out( response )
+    $stderr.puts "Failed to parse response:"
+    $stderr.puts "    #{response.inspect}"
+    $stderr.puts "This is a bug."
+    $stderr.puts "Please report this, including this output, at https://github.com/nickstenning/gc/issues."
+    exit 1
   end
 end
 
