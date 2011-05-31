@@ -3,6 +3,8 @@
 require 'cgi'
 require 'open-uri'
 
+PROMPT = ">> "
+
 class GoogleCalculator
   @@base = 'http://www.google.com/ig/calculator?q='
   @@matcher = /\{lhs: "([^"]*)",rhs: "([^"]*)",error: "([^"]*)",icc: (false|true)\}/
@@ -57,15 +59,21 @@ class GoogleCalculator
 end
 
 if $0 == __FILE__
+  if $ARGV[0] == '-v'
+    $ARGV.shift
+    verbose = true
+  end
+
   if $ARGV.length > 0
-
-    if $ARGV[0] == '-v'
-      $ARGV.shift
-      verbose = true
-    end
-
     puts GoogleCalculator.calculate( $ARGV.join(' '), verbose )
   else
-    puts "Usage: #{File.basename($0)} 2 + 2"
+
+    print PROMPT
+
+    while str = $stdin.gets
+      puts GoogleCalculator.calculate( str.strip, verbose )
+      print PROMPT
+    end
+
   end
 end
